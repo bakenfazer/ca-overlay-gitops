@@ -1,0 +1,39 @@
+# ca-config/base.yaml
+#
+# Shared baseline that is applied via the workflow to everying repo in this org.
+#
+# This file is deep-merged with ca-config/overlays/<repo>.yaml in the GitHub
+# workflow, and the merged result is what gets applied. Because Custom Assembly
+# `apply` is a full replace (declarative, not additive), the merged file is
+# always the complete desired state for the repo — re-running is idempotent and
+# nothing ever gets clobbered by a partial apply.
+#
+# The certificate below is an example self-signed CA for illustration only.
+# Replace it with your organization's real internal root CA (PEM-encoded).
+
+certificates:
+  additional:
+    - name: "Example Corp Internal Root CA"
+      content: |
+        -----BEGIN CERTIFICATE-----
+        MIIDkzCCAnugAwIBAgIUE2h8Xq3Yj4kLm9pR2sT5uV7wX8YwDQYJKoZIhvcNAQEL
+        BQAwWTELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFTATBgNVBAoM
+        DEV4YW1wbGUgQ29ycDEeMBwGA1UEAwwVRXhhbXBsZSBDb3JwIFJvb3QgQ0EwHhcN
+        MjUwMTAxMDAwMDAwWhcNMzUwMTAxMDAwMDAwWjBZMQswCQYDVQQGEwJVUzETMBEG
+        A1UECAwKQ2FsaWZvcm5pYTEVMBMGA1UECgwMRXhhbXBsZSBDb3JwMR4wHAYDVQQD
+        DBVFeGFtcGxlIENvcnAgUm9vdCBDQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCC
+        AQoCggEBAL7Xq3Yj4kLm9pR2sT5uV7wX8Y0aB1cD2eF3gH4iJ5kL6mN7oP8qR9sT
+        0uV1wX2yZ3aB4cD5eF6gH7iJ8kL9mN0oP1qR2sT3uV4wX5yZ6aB7cD8eF9gH0iJ1
+        kL2mN3oP4qR5sT6uV7wX8yZ9aB0cD1eF2gH3iJ4kL5mN6oP7qR8sT9uV0wX1yZ2a
+        B3cD4eF5gH6iJ7kL8mN9oP0qR1sT2uV3wX4yZ5aB6cD7eF8gH9iJ0kL1mN2oP3qR4
+        sT5uV6wX7yZ8aB9cD0eF1gH2iJ3kL4mN5oP6qR7sT8uV9wX0yZ1aB2cD3eF4gH5iJ
+        6kL7mN8oP9qR0sT1uV2wX3yZ4aB5cD6eF7gH8iJ9kL0mN1oP2qUCAwEAAaNTMFEw
+        HQYDVR0OBBYEFH5uV7wX8yZ9aB0cD1eF2gH3iJ4kMB8GA1UdIwQYMBaAFH5uV7wX
+        8yZ9aB0cD1eF2gH3iJ4kMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQAD
+        ggEBAJ2kL3mN4oP5qR6sT7uV8wX9yZ0aB1cD2eF3gH4iJ5kL6mN7oP8qR9sT0uV1
+        wX2yZ3aB4cD5eF6gH7iJ8kL9mN0oP1qR2sT3uV4wX5yZ6aB7cD8eF9gH0iJ1kL2mN
+        3oP4qR5sT6uV7wX8yZ9aB0cD1eF2gH3iJ4kL5mN6oP7qR8sT9uV0wX1yZ2aB3cD4e
+        F5gH6iJ7kL8mN9oP0qR1sT2uV3wX4yZ5aB6cD7eF8gH9iJ0kL1mN2oP3qR4sT5uV6
+        wX7yZ8aB9cD0eF1gH2iJ3kL4mN5oP6qR7sT8uV9wX0yZ1aB2cD3eF4gH5iJ6kL7mN
+        8oP9qR0sT1uV2wX3yZ4aB5cD6eF7g=
+        -----END CERTIFICATE-----

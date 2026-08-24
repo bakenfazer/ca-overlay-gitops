@@ -1,0 +1,91 @@
+name: Custom Assembly (base + overlay)
+
+# GitOps for Chainguard Custom Assembly.
+#
+# `chainctl images repos build apply` is a full replace of a repo's config, not an append.
+# In the example, we keep a shared base config + per-repo overlays in Git, merge them here, 
+# and apply the complete desired state once per repo. Re-running is idempotent.
+#
+# On a PR  -> --dry-run (drift detection, exits non-zero if changes are pending)
+# On main  -> --yes    (apply the updates and run the workflow)
+
+on:
+  push:
+    branches: [main]
+    paths: ["ca-config/**", ".github/workflows/custom-assembly.yml"]
+  pull_request:
+    paths: ["ca-config/**", ".github/workflows/custom-assembly.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write   # required for GitHub OIDC -> Chainguard identity assumption
+
+env:
+  ORGANIZATION: example.com          # your Chainguard org / group (--parent)
+  REPOS: "python node go"            # repos to reconcile
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install yq
+        run: |
+          sudo curl -fsSL -o /usr/local/bin/yq \
+            https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+          yq --version
+
+      # Installs chainctl and logs in by assuming a Chainguard identity via the
+      # workflow's OIDC token. Prior to run, create the identity once with:
+      #   chainctl iam identities create github <name> \
+      #     --github-repo=<org>/<repo> --github-ref=refs/heads/main ...
+      # and grant it repo.list / repo.update on the org, then paste its ID into
+      # the CHAINGUARD_IDENTITY repo secret.
+      - name: Set up chainctl
+        uses: chainguard-dev/setup-chainctl@v0.5.1
+        with:
+          identity: ${{ secrets.CHAINGUARD_IDENTITY }}
+
+      - name: Reconcile each repo (merge base + overlay, then apply)
+        run: |
+          set -euo pipefail
+
+          # Dry-run on PRs, apply for real on main / manual dispatch.
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            MODE="--dry-run"
+          else
+            MODE="--yes"
+          fi
+          echo "Reconcile mode: ${MODE}"
+
+          for repo in ${REPOS}; do
+            overlay="ca-config/overlays/${repo}.yaml"
+            merged="$(mktemp --suffix=.yaml)"
+
+            if [ -f "${overlay}" ]; then
+              echo "::group::${repo}: base + ${overlay}"
+              # Deep-merge base then overlay. `*+` appends arrays (e.g. package
+              # lists) instead of replacing them, so a package in both files
+              # doesn't clobber the other. Later files win on scalar conflicts.
+              yq eval-all '. as $item ireduce ({}; . *+ $item)' \
+                ca-config/base.yaml "${overlay}" > "${merged}"
+            else
+              echo "::group::${repo}: base only (no overlay)"
+              cp ca-config/base.yaml "${merged}"
+            fi
+
+            echo "--- merged config for ${repo} ---"
+            cat "${merged}"
+            echo "----------------------------------"
+
+            chainctl images repos build apply \
+              --parent "${ORGANIZATION}" \
+              --repo "${repo}" \
+              --file "${merged}" \
+              ${MODE}
+
+            echo "::endgroup::"
+          done

@@ -1,0 +1,13 @@
+# ca-config/overlays/node.yaml
+#
+# node-only overlay. Deep-merged ON TOP of base.yaml. Anything here is added
+# to (or overrides) the shared baseline for the `node` repo only.
+#
+# The certs from base.yaml still land here after the merge — this overlay does
+# not need to repeat them.
+
+annotations:
+  "com.example.team": "frontend-team"
+
+environment:
+  NPM_CONFIG_REGISTRY: "https://artifactory.example.com/artifactory/api/npm/npm/"

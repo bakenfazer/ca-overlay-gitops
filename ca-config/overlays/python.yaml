@@ -1,0 +1,13 @@
+# ca-config/overlays/python.yaml
+#
+# python-only overlay. Deep-merged ON TOP of base.yaml. Anything here is added
+# to (or overrides) the shared baseline for the `python` repo only.
+#
+# The certs from base.yaml still land here after the merge — this overlay does
+# not need to repeat them.
+
+annotations:
+  "com.example.team": "backend-team"
+
+environment:
+  PIP_INDEX_URL: "https://artifactory.example.com/artifactory/api/pypi/pypi/simple"
