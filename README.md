@@ -14,7 +14,7 @@ to repos that are specific to those repositories.
 
 ```
 ca-config/
-  base.yaml              # shared: internal root CA(s) for ALL repos
+  base.yaml              # shared: internal root CA(s) for all repos
   overlays/
     python.yaml          # python-only: pip index, annotations
     node.yaml            # node-only: npm registry, annotations
@@ -44,7 +44,7 @@ overwrite the other.
 
 ## Setup
 
-1. **Enable Custom Assembly certificates (Beta)** for your org — contact your
+1. **Enable Custom Assembly certificates** for your org — contact your
    Chainguard Customer Success team. (Only needed for the `certificates` block.)
 
 2. **Create a Chainguard identity for GitHub OIDC** and grant it `repo.list` /
